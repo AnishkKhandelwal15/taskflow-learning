@@ -1,0 +1,34 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #0f172a;
+  color: white;
+}
+
+.debounce-page {
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.debounce-page h1 {
+  margin-bottom: 20px;
+}
+
+.debounce-page input {
+  width: 320px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.debounce-page p {
+  margin-top: 20px;
+  font-size: 18px;
+}
