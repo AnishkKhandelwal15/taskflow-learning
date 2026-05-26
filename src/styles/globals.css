@@ -13,6 +13,9 @@ body {
 .debounce-page {
   min-height: 100vh;
   padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .debounce-page h1 {
@@ -31,4 +34,21 @@ body {
 .debounce-page p {
   margin-top: 20px;
   font-size: 18px;
+}
+
+.users-container {
+  margin-top: 30px;
+  width: 100%;
+  max-width: 1200px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.user-card {
+  background-color: #1e293b;
+  padding: 16px;
+  border-radius: 10px;
+  width: 100%;
 }
