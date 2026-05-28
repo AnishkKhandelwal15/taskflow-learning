@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import debounce from "../utils/debounce";
 import { searchUsers } from "../services/searchService";
@@ -11,18 +11,39 @@ const DebounceSearch = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const controllerRef = useRef<AbortController | null>(null);
+
   const debouncedSearch = useMemo(() => {
     return debounce(async (value: string) => {
-      console.log("API CALL:", value);
+      try {
+        if (controllerRef.current) {
+          controllerRef.current.abort();
+        }
 
-      setLoading(true);
+        const controller = new AbortController();
 
-      const results = await searchUsers(value);
+        controllerRef.current = controller;
 
-      setUsers(results);
+        setLoading(true);
 
-      setLoading(false);
-    }, 1000);
+        const results = await searchUsers(
+          value,
+          controller.signal
+        );
+
+        setUsers(results);
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.name === "AbortError") {
+            console.log("Previous request aborted");
+          } else {
+            console.log(error.message);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
