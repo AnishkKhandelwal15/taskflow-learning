@@ -1,20 +1,26 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import debounce from "../utils/debounce";
+// import debounce from "../utils/debounce";
 import { searchUsers } from "../services/searchService";
 import type { User } from "../types/user";
+import useDebounce from "../hooks/useDebounce";
 
 const DebounceSearch = () => {
-  console.log("Component Re-rendered");
-
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState("");
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+
+  const debouncedQuery = useDebounce(query, 500);
 
   const controllerRef = useRef<AbortController | null>(null);
 
-  const debouncedSearch = useMemo(() => {
-    return debounce(async (value: string) => {
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!debouncedQuery.trim()) {
+        setUsers([]);
+        return;
+      }
+
       try {
         if (controllerRef.current) {
           controllerRef.current.abort();
@@ -27,31 +33,30 @@ const DebounceSearch = () => {
         setLoading(true);
 
         const results = await searchUsers(
-          value,
+          debouncedQuery,
           controller.signal
         );
 
         setUsers(results);
       } catch (error) {
-        if (error instanceof Error) {
-          if (error.name === "AbortError") {
-            console.log("Previous request aborted");
-          } else {
-            console.log(error.message);
-          }
+        if (
+          error instanceof Error &&
+          error.name !== "AbortError"
+        ) {
+          console.error(error);
         }
       } finally {
         setLoading(false);
       }
-    }, 500);
-  }, []);
+    };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    fetchUsers();
+  }, [debouncedQuery]);
 
-    setQuery(value);
-
-    debouncedSearch(value);
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    setQuery(e.target.value);
   };
 
   return (
